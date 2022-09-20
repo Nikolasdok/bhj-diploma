@@ -14,8 +14,8 @@ class AccountsWidget {
    * необходимо выкинуть ошибку.
    * */
   constructor( element ) {
-    if(element === 'null') {
-      throw new Error('Ошибка, пустой элемент');
+    if (!element) {
+      throw new Error("Некорректное значение");
     }
     this.element = element;
     this.registerEvents();
@@ -30,16 +30,16 @@ class AccountsWidget {
    * вызывает AccountsWidget.onSelectAccount()
    * */
   registerEvents() {
-    document.querySelector('.create-account').onclick = () => {
-      App.getModal('createAccount').open();
-    }
-
-    document.querySelector(".accounts-panel").onclick = event => {
-      let target = event.target.closest('.account');
-      if(target) {
-        this.onSelectAccount(target);
+    const newAccount = document.querySelector(".accounts-panel");
+    newAccount.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (e.target.closest("span.create-account")) {
+        App.getModal("createAccount").open();
       }
-    }
+      if (e.target.closest("li.account")) {
+        this.onSelectAccount(e.target.closest("li.account"))
+      }
+    });
   }
 
   /**
@@ -53,12 +53,14 @@ class AccountsWidget {
    * метода renderItem()
    * */
   update() {
-    Account.list(null, (err, resp) => {
-      if(resp && resp.success) {
-        this.clear();
-        resp.data.forEach(a => this.renderItem(a));
-      }
-    })
+    if(User.current()) {
+      Account.list(User.current(), (err, response) => {
+        if (response.success) {
+          this.clear();
+          this.renderItem(response.data);
+        }
+      });
+    }
   }
 
   /**
@@ -67,8 +69,9 @@ class AccountsWidget {
    * в боковой колонке
    * */
   clear() {
-    this.element.querySelectorAll('.account').forEach(element => element.remove());
-  }
+    const accountList = document.querySelectorAll("ul.accounts-panel > li.account");
+    accountList.forEach(account => account.remove());
+ }
 
   /**
    * Срабатывает в момент выбора счёта
@@ -77,14 +80,12 @@ class AccountsWidget {
    * счёта класс .active.
    * Вызывает App.showPage( 'transactions', { account_id: id_счёта });
    * */
-  onSelectAccount( element ) {
-    const accounts = Array.from(document.querySelectorAll('.account'));
-    accounts.forEach(el => {
-      el.classList.remove('active');
-    })
-
-    element.classList.add('active');
-    App.showPage('transactions',  {account_id: element.dataset.id});
+  onSelectAccount(element) {
+    this.element.querySelectorAll(".active").forEach(account => {
+      account.classList.remove("active");
+    });
+    element.classList.add("active");
+    App.showPage("transactions", {account_id: element.dataset.id});
   }
 
   /**
@@ -92,13 +93,14 @@ class AccountsWidget {
    * отображения в боковой колонке.
    * item - объект с данными о счёте
    * */
-  getAccountHTML(item){
-    return `<li class='account' data-id="${item.id}">
-              <a href='#'>
-                <span>${item.name}</span>
-                <span>${item.sum}</span>
-              </a>
-            </li>`;
+  getAccountHTML(item) {
+    return (
+      `<li class="account" data-id="${item.id}">
+        <a href="#">
+            <span>${item.name}</span> 
+            <span>${item.sum} ₽</span>
+        </a>
+      </li>`)
   }
 
   /**
@@ -107,7 +109,8 @@ class AccountsWidget {
    * AccountsWidget.getAccountHTML HTML-код элемента
    * и добавляет его внутрь элемента виджета
    * */
-  renderItem(data){
-    this.element.insertAdjacentHTML('beforeend', this.getAccountHTML(data));
+  renderItem(data) {
+    const accountListArr = document.querySelector(".accounts-panel");
+    data.forEach(item => accountListArr.insertAdjacentHTML("beforeend", this.getAccountHTML(item)));
   }
 }
