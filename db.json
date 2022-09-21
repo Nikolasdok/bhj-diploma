@@ -241,6 +241,15 @@
       "account_id": "2cpij732el88ydvha",
       "user_id": "2cpij732el88yb2lj",
       "created_at": "2022-09-20T13:41:45.198Z"
+    },
+    {
+      "id": "2cpij71mbl8brg407",
+      "type": "income",
+      "name": "ремонт стиралки",
+      "sum": 4000,
+      "account_id": "2cpij732el88ydvha",
+      "user_id": "2cpij732el88yb2lj",
+      "created_at": "2022-09-21T15:08:53.958Z"
     }
   ]
 }
